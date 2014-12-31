@@ -7,6 +7,7 @@
 	<input id="appid" placeholder="Facebook App ID">
 	<button id="login">Login</button>
 	<div id="status"></div>
+	<div id="result"></div>
 	<script>
 		(function(d, s, id){
 			var js, fjs = d.getElementsByTagName(s)[0];
@@ -16,6 +17,43 @@
 			fjs.parentNode.insertBefore(js, fjs);
 		}(document, 'script', 'facebook-jssdk'));
 	</script>
-	<script type="module" src="main.js"></script>
+	<script type="module" src="facebook.js"></script>
+	<script type="module">
+		import * as facebook from 'facebook';
+
+		function setStatus(msg, data) {
+			var elem = document.querySelector('#status');
+			elem.textContent = msg;
+			if(this == true) {
+				elem.textContent = elem.textContent + JSON.stringify(data);
+			}
+			return data;
+		}
+
+		document.querySelector('#login').onclick = function() {
+		facebook.login(document.querySelector('#appid').value)
+		.then(setStatus.bind(false, 'Loading conversation list'))
+		.then(facebook.listConversations)
+		.then(convList => convList.filter(x => x.message_count < 500).slice(0, 4))
+		.then(setStatus.bind(false, 'Loading messages of conversations'))
+		.then(convList => Promise.all(convList.map(facebook.loadConversation)))
+		.then(setStatus.bind(false, 'Loading attachments of converstations'))
+		.then(convList => Promise.all(convList.map(facebook.loadAttachments)))
+		.then(setStatus.bind(false, 'Serializing conversations'))
+		.then(convList => Promise.all(convList.map(facebook.blobifyConversation)))
+		.then(convList => {
+			console.log(convList);
+			var c = document.querySelector('#result');
+			while(c.firstChild) {c.removeChild(c.firstChild);}
+			convList.forEach(conv => {
+				var e = c.appendChild(document.createElement('a'));
+				e.href = 'http://' + conv;
+				e.textContent = conv;
+			});
+		})
+		.catch(setStatus.bind(true, 'Something went wrong!'));
+	};
+
+	</script>
 </body>
 </html>
