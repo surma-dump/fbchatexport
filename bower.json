@@ -13,6 +13,7 @@
     "tests"
   ],
   "dependencies": {
-    "stringview": "*"
+    "stringview": "*",
+    "jszip": "Stuk/jszip#~2.4.0"
   }
 }

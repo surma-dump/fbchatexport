@@ -87,13 +87,15 @@ export function loadSingleAttachment(at) {
 	});
 }
 
-export function blobifyConversation(conv) {
+export function stringifyConversation(conv) {
 	var msgs = conv.messages;
 	conv.messages = [];
 
 	var data = [JSON.stringify(conv)];
 	Array.prototype.push.apply(data, msgs.map(JSON.stringify));
 
-	var convBlob = new Blob(data, {type: 'application/octet-stream'});
-	return Promise.resolve(convBlob);
+	return Promise.resolve({
+		name: conv.id,
+		data: data.join('')
+	});
 }

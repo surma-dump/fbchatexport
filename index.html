@@ -2,6 +2,7 @@
 <html>
 <body>
     <script src="/bower_components/stringview/stringview.js"></script>
+    <script src="/bower_components/jszip/dist/jszip.min.js"></script>
     <script src="https://google.github.io/traceur-compiler/bin/traceur.js"></script>
     <script src="https://google.github.io/traceur-compiler/src/bootstrap.js"></script>
 	<input id="appid" placeholder="Facebook App ID">
@@ -40,15 +41,17 @@
 		.then(setStatus.bind(false, 'Loading attachments of converstations'))
 		.then(convList => Promise.all(convList.map(facebook.loadAttachments)))
 		.then(setStatus.bind(false, 'Serializing conversations'))
-		.then(convList => Promise.all(convList.map(facebook.blobifyConversation)))
+		.then(convList => Promise.all(convList.map(facebook.stringifyConversation)))
+		.then(setStatus.bind(false, 'Creating ZIP file'))
 		.then(convList => {
-			var c = document.querySelector('#result');
-			while(c.firstChild) {c.removeChild(c.firstChild);}
-			convList.forEach(conv => {
-				var e = c.appendChild(document.createElement('a'));
-				e.href = URL.createObjectURL(conv);
-				e.textContent = 'Conversation';
-			});
+			var zip = new JSZip();
+			convList.forEach(conv => {zip.file(conv.name+'.json', conv.data);});
+			return Promise.resolve(zip.generate({type: 'blob'}));
+		})
+		.then(archive => {
+			var e = document.querySelector('#result').appendChild(document.createElement('a'));
+			e.href = URL.createObjectURL(archive);
+			e.textContent = 'Download Zip archive';
 		})
 		.catch(setStatus.bind(true, 'Something went wrong!'));
 	};
