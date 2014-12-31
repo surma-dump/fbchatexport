@@ -88,6 +88,12 @@ export function loadSingleAttachment(at) {
 }
 
 export function blobifyConversation(conv) {
-	// TODO: Actual implementation...
-	return Promise.resolve(conv.id);
+	var msgs = conv.messages;
+	conv.messages = [];
+
+	var data = [JSON.stringify(conv)];
+	Array.prototype.push.apply(data, msgs.map(JSON.stringify));
+
+	var convBlob = new Blob(data, {type: 'application/octet-stream'});
+	return Promise.resolve(convBlob);
 }

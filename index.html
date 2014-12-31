@@ -42,13 +42,12 @@
 		.then(setStatus.bind(false, 'Serializing conversations'))
 		.then(convList => Promise.all(convList.map(facebook.blobifyConversation)))
 		.then(convList => {
-			console.log(convList);
 			var c = document.querySelector('#result');
 			while(c.firstChild) {c.removeChild(c.firstChild);}
 			convList.forEach(conv => {
 				var e = c.appendChild(document.createElement('a'));
-				e.href = 'http://' + conv;
-				e.textContent = conv;
+				e.href = URL.createObjectURL(conv);
+				e.textContent = 'Conversation';
 			});
 		})
 		.catch(setStatus.bind(true, 'Something went wrong!'));
