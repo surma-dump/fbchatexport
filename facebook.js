@@ -67,7 +67,7 @@ export function loadAttachments(conv) {
 	});
 }
 
-export function loadSingleAttachment(at) {
+function loadSingleAttachment(at) {
 	if(!at.mime_type.startsWith('image/')) {
 		return Promise.resolve(at);
 	}
@@ -84,6 +84,33 @@ export function loadSingleAttachment(at) {
 		xhr.responseType = 'arraybuffer';
 		xhr.open('GET', at.image_data.url, true);
 		xhr.send();
+	});
+}
+
+export function loadAvatars(conv) {
+	conv.participants.data = conv.participants.data.map(loadSingleAvatar);
+	return Promise.all(conv.participants.data)
+	.then(x => {
+		conv.participants.data = x;
+		return conv;
+	})
+}
+
+function loadSingleAvatar(participant) {
+	return new Promise(function(resolve, reject) {
+		FB.api('/'+participant.id+'/picture?type=large&redirect=false', function(response) {
+			var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function() {
+				if(xhr.readyState != 4) {
+					return;
+				}
+				participant.picture = StringView.bytesToBase64(new Uint8Array(xhr.response));
+				resolve(participant);
+			};
+			xhr.responseType = 'arraybuffer';
+			xhr.open('GET', response.url, true);
+			xhr.send();
+		});
 	});
 }
 

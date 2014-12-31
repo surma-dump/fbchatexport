@@ -40,6 +40,8 @@
 		.then(convList => Promise.all(convList.map(facebook.loadConversation)))
 		.then(setStatus.bind(false, 'Loading attachments of converstations'))
 		.then(convList => Promise.all(convList.map(facebook.loadAttachments)))
+		.then(setStatus.bind(false, 'Loading avatars of converstation participants'))
+		.then(convList => Promise.all(convList.map(facebook.loadAvatars)))
 		.then(setStatus.bind(false, 'Serializing conversations'))
 		.then(convList => Promise.all(convList.map(facebook.stringifyConversation)))
 		.then(setStatus.bind(false, 'Creating ZIP file'))
@@ -49,9 +51,7 @@
 			return Promise.resolve(zip.generate({type: 'blob'}));
 		})
 		.then(archive => {
-			var e = document.querySelector('#result').appendChild(document.createElement('a'));
-			e.href = URL.createObjectURL(archive);
-			e.textContent = 'Download Zip archive';
+			location.href = URL.createObjectURL(archive);
 		})
 		.catch(setStatus.bind(true, 'Something went wrong!'));
 	};
