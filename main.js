@@ -74,8 +74,17 @@
 		}
 
 		return new Promise(function(resolve, reject) {
-			// TODO: Use XHR?
-			resolve(at);
+			var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function() {
+				if(xhr.readyState != 4) {
+					return;
+				}
+				at.binary_data = StringView.bytesToBase64(new Uint8Array(xhr.response));
+				resolve(at);
+			};
+			xhr.responseType = 'arraybuffer';
+			xhr.open('GET', at.image_data.url, true);
+			xhr.send();
 		});
 	}
 
