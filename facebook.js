@@ -23,7 +23,7 @@ export function listConversations() {
 	return new Promise(function(resolve, reject) {
 		var data = [];
 		FB.api('/me/conversations?fields=message_count,participants', function cb(response) {
-			if(response.data.length <= 0) {
+			if(!response.data || response.data.length <= 0) {
 				resolve(data);
 				return;
 			}
@@ -37,8 +37,8 @@ export function loadConversation(conv) {
 	return new Promise(function(resolve, reject) {
 		var thread = conv;
 		thread.messages = [];
-		FB.api('/'+conv.id+'/messages', function cb(response) {
-			if(response.data.length <= 0) {
+		FB.api(`/${conv.id}/messages`, function cb(response) {
+			if(!response.data || response.data.length <= 0) {
 				resolve(thread);
 				return;
 			}
@@ -49,68 +49,59 @@ export function loadConversation(conv) {
 }
 
 export function loadAttachments(conv) {
-	conv.messages = conv.messages.map(function(msg) {
-		if(!msg.attachments || msg.attachments.data.length <= 0) {
-			return Promise.resolve(msg);
-		}
-		msg.attachments.data = msg.attachments.data.map(loadSingleAttachment);
-		return Promise.all(msg.attachments.data)
-		.then(x => {
-			msg.attachments.data = x;
-			return msg;
-		});
-	});
-	return Promise.all(conv.messages)
+	return Promise.all(
+		conv.messages.map(msg => {
+			if(!msg.attachments || !msg.attachments.data || msg.attachments.data.length <= 0) {
+				return Promise.resolve(msg);
+			}
+
+			return Promise.all(
+				msg.attachments.data
+				.map(x => (x.image_data || {}).url)
+				.map(loadImage)
+			)
+			.then(attachments => {
+				Object.keys(msg.attachments.data)
+				.forEach(i => msg.attachments.data[i].binary_data = attachments[i]);
+				return msg;
+			});
+		})
+	)
 	.then(x => {
 		conv.messages = x;
 		return conv;
 	});
 }
 
-function loadSingleAttachment(at) {
-	if(!at.mime_type.startsWith('image/')) {
-		return Promise.resolve(at);
-	}
-
-	return new Promise(function(resolve, reject) {
-		var xhr = new XMLHttpRequest();
-		xhr.onreadystatechange = function() {
-			if(xhr.readyState != 4) {
-				return;
-			}
-			at.binary_data = StringView.bytesToBase64(new Uint8Array(xhr.response));
-			resolve(at);
-		};
-		xhr.responseType = 'arraybuffer';
-		xhr.open('GET', at.image_data.url, true);
-		xhr.send();
+export function loadAvatars(conv) {
+	return Promise.all(
+		conv.participants.data
+		.map(x => `https://graph.facebook.com/${x.id}/picture?type=large&redirect=true`)
+		.map(loadImage)
+	)
+	.then(avatars => {
+		Object.keys(conv.participants.data)
+		.forEach(i => conv.participants.data[i].picture = avatars[i])
+		return conv;
 	});
 }
 
-export function loadAvatars(conv) {
-	conv.participants.data = conv.participants.data.map(loadSingleAvatar);
-	return Promise.all(conv.participants.data)
-	.then(x => {
-		conv.participants.data = x;
-		return conv;
-	})
-}
-
-function loadSingleAvatar(participant) {
+function loadImage(url) {
 	return new Promise(function(resolve, reject) {
-		FB.api('/'+participant.id+'/picture?type=large&redirect=false', function(response) {
-			var xhr = new XMLHttpRequest();
-			xhr.onreadystatechange = function() {
-				if(xhr.readyState != 4) {
-					return;
-				}
-				participant.picture = StringView.bytesToBase64(new Uint8Array(xhr.response));
-				resolve(participant);
-			};
-			xhr.responseType = 'arraybuffer';
-			xhr.open('GET', response.url, true);
-			xhr.send();
-		});
+		if(!url) {
+			resolve('');
+			return
+		}
+		var img = document.createElement('img');
+		img.onload = function() {
+			var cnv = document.createElement('canvas');
+			cnv.width = img.width;
+			cnv.height = img.height;
+			cnv.getContext('2d').drawImage(img, 0, 0);
+			resolve(cnv.toDataURL());
+		};
+		img.crossOrigin = 'anonymous';
+		img.src = url;
 	});
 }
 
