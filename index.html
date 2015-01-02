@@ -31,12 +31,16 @@
 			return data;
 		}
 
+
 		document.querySelector('#login').onclick = function() {
 		facebook.login(document.querySelector('#appid').value)
 		.then(setStatus.bind(false, 'Loading conversation list'))
 		.then(facebook.listConversations)
-		// .then(convList => convList.filter(x => x.message_count < 500).slice(0, 4))
-		.then(convList => convList.slice(0, 5))
+		// .then(convList => convList.filter(
+		// 	x => x.participants.data
+		// 		.map(x => x.name)
+		// 		.filter(x => x == "Bibiana Siegburg-Surma").length > 0)
+		// )
 		.then(setStatus.bind(false, 'Loading messages of conversations'))
 		.then(convList => Promise.all(convList.map(facebook.loadConversation)))
 		.then(setStatus.bind(false, 'Loading attachments of converstations'))
@@ -48,7 +52,7 @@
 		.then(setStatus.bind(false, 'Creating ZIP file'))
 		.then(convList => {
 			var zip = new JSZip();
-			convList.forEach(conv => {zip.file(`${conv.name}.json`, conv.data);});
+			convList.forEach(conv => zip.file(`${conv.name}.json`, conv.data));
 			return Promise.resolve(zip.generate({type: 'blob'}));
 		})
 		.then(archive => {

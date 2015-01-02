@@ -19,10 +19,10 @@ export function login(appId) {
 	});
 }
 
-export function listConversations() {
+export function loadAllPages(url) {
 	return new Promise(function(resolve, reject) {
 		var data = [];
-		FB.api('/me/conversations?fields=message_count,participants', function cb(response) {
+		FB.api(url, function cb(response) {
 			if(!response.data || response.data.length <= 0) {
 				resolve(data);
 				return;
@@ -33,18 +33,16 @@ export function listConversations() {
 	});
 }
 
+export function listConversations() {
+	return loadAllPages('/me/conversations?fields=message_count,participants');
+}
+
 export function loadConversation(conv) {
-	return new Promise(function(resolve, reject) {
-		var thread = conv;
-		thread.messages = [];
-		FB.api(`/${conv.id}/messages`, function cb(response) {
-			if(!response.data || response.data.length <= 0) {
-				resolve(thread);
-				return;
-			}
-			Array.prototype.push.apply(thread.messages, response.data);
-			FB.api(response.paging.next, cb);
-		});
+	conv.messages = [];
+	return loadAllPages(`/${conv.id}/messages`)
+	.then(msgs => {
+		conv.messages = msgs;
+		return conv;
 	});
 }
 
