@@ -36,25 +36,24 @@
 		.then(setStatus.bind(false, 'Loading conversation list'))
 		.then(facebook.listConversations)
 		// .then(convList => convList.filter(x => x.message_count < 500).slice(0, 4))
-		.then(convList => convList.slice(0, 1))
+		.then(convList => convList.slice(0, 5))
 		.then(setStatus.bind(false, 'Loading messages of conversations'))
 		.then(convList => Promise.all(convList.map(facebook.loadConversation)))
 		.then(setStatus.bind(false, 'Loading attachments of converstations'))
 		.then(convList => Promise.all(convList.map(facebook.loadAttachments)))
-		.then(convList => {console.log(convList); return convList})
 		.then(setStatus.bind(false, 'Loading avatars of converstation participants'))
 		.then(convList => Promise.all(convList.map(facebook.loadAvatars)))
-		// .then(setStatus.bind(false, 'Serializing conversations'))
-		// .then(convList => Promise.all(convList.map(facebook.stringifyConversation)))
-		// .then(setStatus.bind(false, 'Creating ZIP file'))
-		// .then(convList => {
-		// 	var zip = new JSZip();
-		// 	convList.forEach(conv => {zip.file(conv.name+'.json', conv.data);});
-		// 	return Promise.resolve(zip.generate({type: 'blob'}));
-		// })
-		// .then(archive => {
-		// 	location.href = URL.createObjectURL(archive);
-		// })
+		.then(setStatus.bind(false, 'Serializing conversations'))
+		.then(convList => Promise.all(convList.map(facebook.stringifyConversation)))
+		.then(setStatus.bind(false, 'Creating ZIP file'))
+		.then(convList => {
+			var zip = new JSZip();
+			convList.forEach(conv => {zip.file(`${conv.name}.json`, conv.data);});
+			return Promise.resolve(zip.generate({type: 'blob'}));
+		})
+		.then(archive => {
+			location.href = URL.createObjectURL(archive);
+		})
 		.catch(setStatus.bind(true, 'Something went wrong!'));
 	};
 

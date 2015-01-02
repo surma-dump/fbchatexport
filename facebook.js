@@ -37,7 +37,7 @@ export function loadConversation(conv) {
 	return new Promise(function(resolve, reject) {
 		var thread = conv;
 		thread.messages = [];
-		FB.api('/'+conv.id+'/messages', function cb(response) {
+		FB.api(`/${conv.id}/messages`, function cb(response) {
 			if(!response.data || response.data.length <= 0) {
 				resolve(thread);
 				return;
@@ -76,7 +76,7 @@ export function loadAttachments(conv) {
 export function loadAvatars(conv) {
 	return Promise.all(
 		conv.participants.data
-		.map(x => 'https://graph.facebook.com/'+x.id+'/picture?type=large&redirect=true')
+		.map(x => `https://graph.facebook.com/${x.id}/picture?type=large&redirect=true`)
 		.map(loadImage)
 	)
 	.then(avatars => {
