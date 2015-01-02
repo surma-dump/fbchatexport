@@ -56,7 +56,9 @@ export function loadAttachments(conv) {
 			}
 
 			return Promise.all(
-				msg.attachments.data.map(x => (x.image_data || {}).url).map(loadImage)
+				msg.attachments.data
+				.map(x => (x.image_data || {}).url)
+				.map(loadImage)
 			)
 			.then(attachments => {
 				Object.keys(msg.attachments.data)
@@ -72,29 +74,15 @@ export function loadAttachments(conv) {
 }
 
 export function loadAvatars(conv) {
-	conv.participants.data = conv.participants.data.map(loadSingleAvatar);
-	return Promise.all(conv.participants.data)
-	.then(x => {
-		conv.participants.data = x;
+	return Promise.all(
+		conv.participants.data
+		.map(x => 'https://graph.facebook.com/'+x.id+'/picture?type=large&redirect=true')
+		.map(loadImage)
+	)
+	.then(avatars => {
+		Object.keys(conv.participants.data)
+		.forEach(i => conv.participants.data[i].picture = avatars[i])
 		return conv;
-	})
-}
-
-function loadSingleAvatar(participant) {
-	return new Promise(function(resolve, reject) {
-		FB.api('/'+participant.id+'/picture?type=large&redirect=false', function(response) {
-			var xhr = new XMLHttpRequest();
-			xhr.onreadystatechange = function() {
-				if(xhr.readyState != 4) {
-					return;
-				}
-				participant.picture = StringView.bytesToBase64(new Uint8Array(xhr.response));
-				resolve(participant);
-			};
-			xhr.responseType = 'arraybuffer';
-			xhr.open('GET', response.url, true);
-			xhr.send();
-		});
 	});
 }
 
