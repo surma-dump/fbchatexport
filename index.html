@@ -12,6 +12,7 @@
     select {
       display: block;
       width: 100%;
+      min-height: 50vh;
     }
     .step {
       border-left: 3px solid transparent;
@@ -31,13 +32,14 @@
     <script src="https://google.github.io/traceur-compiler/src/bootstrap.js"></script>
   <div id="step1" class="step current">
   	App ID: <input id="appid" value="1514696795484893">
-  	<button id="loadConvs">Load Conversations</button>
+  	<button id="listConvs">List Conversations</button>
   </div>
   <div id="step2" class="step">
     <select id="convSelect" multiple></select>
     Options:
     <input type="checkbox" id="loadAttachments"><label for="loadAttachments">Load Attachments</label>
     <input type="checkbox" id="loadAvatars"><label for="loadAvatars">Load Avatars</label>
+  	<button id="loadConvs">Download selected conversations</button>
   </div>
 	<div id="status"></div>
 	<div id="result"></div>
@@ -55,51 +57,60 @@
     var appId = '1514696795484893';
 	  import * as facebook from 'facebook.js';
 
-	  function setStatus(msg, data) {
-	    var elem = document.querySelector('#status');
-	    elem.textContent = msg;
-	    if(this == true) {
-	      elem.textContent = elem.textContent + JSON.stringify(data);
-	    }
-	    return data;
-	  }
-
     var currentStep = 1;
+    function nextStep() {
+      document.querySelector(`#step${currentStep}`).className = "step";
+      currentStep++;
+      document.querySelector(`#step${currentStep}`).className = "step current";
+    }
+
+    function setStatus(msg, data) {
+      var elem = document.querySelector('#status');
+      elem.textContent = msg;
+      if(this == true) {
+        elem.textContent = elem.textContent + JSON.stringify(data);
+      }
+      return data;
+    }
+
     var convSelect = document.querySelector("#convSelect");
 
-	  document.querySelector('#loadConvs').onclick = function() {
-	  facebook.login(document.querySelector('#appid').value)
-	  .then(setStatus.bind(false, 'Loading conversation list'))
-	  .then(facebook.listConversations)
-    .then(convList => convList.forEach(item => {
-      console.log(item);
-      var o = convSelect.appendChild(document.createElement('option'));
-      o.setAttribute('value', item.id);
-      o.textContent = item.participants.data.reduce((p, c) => `${p}${p!=""?", ":""}${c.name}`, "") + ` (${item.message_count} messages)`;
-    }));
+	  document.querySelector('#listConvs').onclick = function() {
+  	  facebook.login(document.querySelector('#appid').value)
+	    .then(setStatus.bind(false, 'Loading list of conversations'))
+  	  .then(facebook.listConversations)
+      .then(convList => convList.forEach(item => {
+        var o = convSelect.appendChild(document.createElement('option'));
+        o.setAttribute('value', JSON.stringify(item));
+        o.textContent = item.participants.data.reduce((p, c) => `${p}${p!=''?', ':''}${c.name}`, '') + ` (${item.message_count} messages)`;
+      }))
+      .then(nextStep)
+	    .then(setStatus.bind(false, 'Done'))
+  	};
 
+    document.querySelector('#loadConvs').onclick = function() {
+      var p = Promise.resolve(Array.prototype.map.call(convSelect.selectedOptions, i => JSON.parse(i.value)))
+	    .then(setStatus.bind(false, 'Loading conversations'))
+  	  .then(convList => Promise.all(convList.map(facebook.loadConversation)));
 
-	    /*.then(convList => convList.filter(x => x.id == 't_mid.1370266791361:ca819e61e01c27eb35'))
-	    .then(setStatus.bind(false, 'Loading messages of conversations'))
-	  .then(convList => Promise.all(convList.map(facebook.loadConversation)))
-	  //.then(setStatus.bind(false, 'Loading attachments of converstations'))
-	  //.then(convList => Promise.all(convList.map(facebook.loadAttachments)))
-	  //.then(setStatus.bind(false, 'Loading avatars of converstation participants'))
-	  //.then(convList => Promise.all(convList.map(facebook.loadAvatars)))
-	  .then(setStatus.bind(false, 'Serializing conversations'))
-	  .then(convList => Promise.all(convList.map(facebook.stringifyConversation)))
-	  .then(setStatus.bind(false, 'Creating ZIP file'))
-	  .then(convList => {
-	    var zip = new JSZip();
-	    convList.forEach(conv => zip.file(`${conv.name}.json`, conv.data));
-	    return Promise.resolve(zip.generate({type: 'blob'}));
-	  })
-	  .then(archive => {
-	    location.href = URL.createObjectURL(archive);
-	  })
-	  .catch(setStatus.bind(true, 'Something went wrong!'));*/
-	};
-
+      if(document.querySelector('#loadAttachments').checked) {
+        p = p.then(setStatus.bind(false, 'Loading attachments'))
+        .then(convList => Promise.all(convList.map(facebook.loadAttachments)));
+      }
+      p.then(setStatus.bind(false, 'Serializing conversations'))
+  	  .then(convList => Promise.all(convList.map(facebook.stringifyConversation)))
+      .then(setStatus.bind(false, 'Zipping conversations'))
+  	  .then(convList => {
+  	    var zip = new JSZip();
+  	    convList.forEach(conv => zip.file(`${conv.name}.json`, conv.data));
+  	    return Promise.resolve(zip.generate({type: 'blob'}));
+  	  })
+  	  .then(archive => {
+  	    location.href = URL.createObjectURL(archive);
+  	  })
+      .then(setStatus.bind(false, 'Done'))
+  	  .catch(setStatus.bind(true, 'Something went wrong!'));
+    };
 	</script>
 </body>
 </html>
