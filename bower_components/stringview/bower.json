@@ -1,0 +1,24 @@
+{
+  "name": "stringview",
+  "version": "0.0.0",
+  "authors": [
+    "Isidro Vila Verde <jvverde@gmail.com>"
+  ],
+  "description": "Mozilla stringview implementation",
+  "main": "stringview.js",
+  "keywords": [
+    "Javascript",
+    "String",
+    "ArrayBuffer",
+    "Unicode"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/jvverde/StringView",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
