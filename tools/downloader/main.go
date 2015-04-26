@@ -3,11 +3,14 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 
 	fb "github.com/huandu/facebook"
 	"github.com/surma-dump/fbchatexport/lib"
+	"github.com/vincent-petithory/dataurl"
 )
 
 var (
@@ -43,6 +46,23 @@ func main() {
 			if err := res.DecodeField("", &msg); err != nil {
 				log.Printf("Error decoding messages: %s", err)
 				continue
+			}
+			for i, a := range msg.Attachments.Data {
+				log.Printf("Downloading attachment...")
+				req, _ := http.NewRequest("GET", a.ImageData.URL, nil)
+				req.Close = true
+				resp, err := http.DefaultClient.Do(req)
+				if err != nil {
+					log.Printf("Error downloading attachment: %s", err)
+					continue
+				}
+				data, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					log.Printf("Error reading attachment: %s", err)
+				}
+				log.Printf("Done")
+				du := dataurl.New(data, a.MimeType)
+				msg.Attachments.Data[i].BinaryData = du.String()
 			}
 			enc.Encode(msg)
 		}
