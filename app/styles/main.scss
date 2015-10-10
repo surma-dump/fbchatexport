@@ -1,3 +1,34 @@
-#birthday {
-  color: red;
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: Helvetica;
+  font-size: 40px;
+  color: rgba(0, 0, 0, 0.54);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+p {
+  margin: 0;
+}
+code {
+  font-weight: bold;
+  color: rgba(0, 0, 0, 1);
+}
+button {
+  display: block;
+  width: 100%;
+  height: 3em;
+  background-color: transparent;
+  border: 3px solid rgba(0, 0, 0, 0.54);
+  font-size: 40px;
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+  }
+}
+input {
+  display: block;
+  margin: 0 auto;
 }
