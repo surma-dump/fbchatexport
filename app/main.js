@@ -39,7 +39,7 @@ button.addEventListener('click', () => {
         .filter((value, index, array) => array.indexOf(value) === index)
         .join('_') + '.html';
       console.log('Processing', filename);
-      
+
       const newDoc = doc.cloneNode(true);
       newDoc.documentElement.querySelector('.contents').appendChild(conv);
       zipFile.file(filename, newDoc.documentElement.innerHTML);
@@ -48,10 +48,15 @@ button.addEventListener('click', () => {
     const zipBlob = zipFile.generate({type: 'blob'});
     const blobURL = window.URL.createObjectURL(zipBlob);
     const a = document.createElement('a');
+    a.style.display = 'none';
     a.href = blobURL;
     a.download = 'messages.zip';
+    document.body.appendChild(a);
     a.click();
-    window.URL.revokeObjectURL(blobURL);
+    window.setTimeout(() => {
+      window.URL.revokeObjectURL(blobURL);
+      document.body.removeChild(a);
+    }, 2000);
   });
   fr.readAsText(file, 'utf-8');
 });
