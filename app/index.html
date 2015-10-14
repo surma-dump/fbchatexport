@@ -29,14 +29,10 @@
 
     <meta name="theme-color" content="#3372DF">
 
-    <link rel="stylesheet-defer" href="styles/main.css">
-    <script>
-    var require = {
-      baseUrl: './',
-      waitSeconds: 0
-    };
-    </script>
-    <script src="vendor/requirejs/require.js" data-main="main.js" defer></script>
+    <!-- lazy-loaded styles -->
+    <noscript class="lazyload">
+      <link rel="stylesheet" href="styles/main.css">
+    </noscript>
 
     <!-- Styles for First Render -->
     <style>
@@ -46,8 +42,33 @@
         width: 100%;
         min-height: 100vh;
         background-color: #FDD835;
+        font-size: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+      }
+      button {
+        display: block;
+        width: 100%;
+        height: 3em;
+        background-color: transparent;
+        border: 3px solid rgba(0, 0, 0, 0.54);
+        font-size: 40px;
+      }
+      input {
+        display: block;
+        margin: 0 auto;
       }
     </style>
+
+    <!-- module loader -->
+    <script>
+    var require = {
+      baseUrl: './',
+      waitSeconds: 0
+    };
+    </script>
+    <script src="nobabel/requirejs/require.js" data-main="main.js" defer></script>
   </head>
   <body>
     <p>
