@@ -3,14 +3,11 @@ import {default as cssLoader} from 'modules/defer-css';
 cssLoader();
 
 const ww = new Worker('nobabel/webworker.js');
-ww.addEventListener('error', e => {
-  console.log('!!!', e);
-});
 ww.addEventListener('message', ev => {
-  console.log('Received message', ev.data);
+  console.log('Received a message');
+  console.log(ev.data);
 });
 
-/*
 const fileInput = document.querySelector('input');
 const button = document.querySelector('button');
 var file = null;
@@ -27,6 +24,9 @@ button.addEventListener('click', () => {
     return;
   }
 
+  ww.postMessage('<!doctype>');
+});
+/*
   const fr = new FileReader();
   fr.addEventListener('load', ev => {
     const doc = document.implementation.createHTMLDocument('');
