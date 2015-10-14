@@ -10,6 +10,7 @@
     "tests"
   ],
   "dependencies": {
-    "jszip": "Stuk/jszip#~2.5.0"
+    "jszip": "Stuk/jszip#~2.5.0",
+    "htmlparser": "node-htmlparser#~2.0.0"
   }
 }

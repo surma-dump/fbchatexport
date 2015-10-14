@@ -2,6 +2,15 @@ import {default as JSZip} from 'bower_components/jszip/dist/jszip.min';
 import {default as cssLoader} from 'modules/defer-css';
 cssLoader();
 
+const ww = new Worker('nobabel/webworker.js');
+ww.addEventListener('error', e => {
+  console.log('!!!', e);
+});
+ww.addEventListener('message', ev => {
+  console.log('Received message', ev.data);
+});
+
+/*
 const fileInput = document.querySelector('input');
 const button = document.querySelector('button');
 var file = null;
@@ -60,3 +69,4 @@ button.addEventListener('click', () => {
   });
   fr.readAsText(file, 'utf-8');
 });
+*/
