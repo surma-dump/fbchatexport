@@ -1,9 +1,11 @@
 export default () => {
-  var links = document.querySelectorAll('link[rel=stylesheet-defer]');
-  [].forEach.call(links, link => {
-    const parent = link.parentNode;
-    parent.removeChild(link);
-    link.rel = 'stylesheet';
-    parent.appendChild(link);
+  window.requestAnimationFrame(() => {
+    const lazyloads = document.querySelectorAll('noscript.lazyload');
+    const container = document.createElement('div');
+    [].forEach.call(lazyloads, lazyload => {
+      const parent = lazyload.parentNode;
+      container.innerHTML = lazyload.textContent;
+      [].forEach.call(container.children, parent.appendChild.bind(parent));
+    });
   });
 };

@@ -29,14 +29,10 @@
 
     <meta name="theme-color" content="#3372DF">
 
-    <link rel="stylesheet-defer" href="styles/main.css">
-    <script>
-    var require = {
-      baseUrl: './',
-      waitSeconds: 0
-    };
-    </script>
-    <script src="vendor/requirejs/require.js" data-main="main.js" defer></script>
+    <!-- lazy-loaded styles -->
+    <noscript class="lazyload">
+      <link rel="stylesheet" href="styles/main.css">
+    </noscript>
 
     <!-- Styles for First Render -->
     <style>
@@ -48,6 +44,15 @@
         background-color: #FDD835;
       }
     </style>
+
+    <!-- module loader -->
+    <script>
+    var require = {
+      baseUrl: './',
+      waitSeconds: 0
+    };
+    </script>
+    <script src="nobabel/requirejs/require.js" data-main="main.js" defer></script>
   </head>
   <body>
     <p>
