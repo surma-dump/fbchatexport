@@ -1,5 +1,5 @@
 self['module'] = {exports: {}};
-importScripts('../bower_components/htmlparser/lib/htmlparser.js');
+importScripts('../nobabel/htmlparser/htmlparser.js');
 export function HTMLParser(rawHtml) {
   return new Promise((resolve, reject) => {
     const parser =
