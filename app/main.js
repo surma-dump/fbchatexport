@@ -61,6 +61,6 @@ function setProgress(text, percent) {
   button.style.background =
     `linear-gradient(
       90deg,
-      rgba(0, 0, 0, 0.54) ${percent}%,
-      rgba(0, 0, 0, 0) ${percent}%)`;
+      rgba(0, 0, 0, 0.24) ${percent}%,
+      rgba(0, 0, 0, 0) ${percent}%) no-repeat`;
 }

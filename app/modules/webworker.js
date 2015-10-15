@@ -2,6 +2,11 @@ import {HTMLParser} from 'modules/htmlparser';
 import {default as JSZip} from 'bower_components/jszip/dist/jszip.min';
 
 self.addEventListener('message', ev => {
+  self.postMessage({
+    type: 'progress',
+    progress: 0,
+    message: `Parsing file`
+  });
   return HTMLParser(ev.data)
   .then(dom => {
     self.postMessage({
