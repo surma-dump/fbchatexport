@@ -25,9 +25,9 @@
 
     <!-- Tile icon for Win8 (144x144 + tile color) -->
     <meta name="msapplication-TileImage" content="images/touch/ms-touch-icon-144x144-precomposed.png">
-    <meta name="msapplication-TileColor" content="#3372DF">
+    <meta name="msapplication-TileColor" content="#FDD835">
 
-    <meta name="theme-color" content="#3372DF">
+    <meta name="theme-color" content="#FDD835">
 
     <!-- lazy-loaded styles -->
     <noscript class="lazyload">
@@ -36,13 +36,19 @@
 
     <!-- Styles for First Render -->
     <style>
+      * {
+        box-sizing: border-box;
+      }
+      html, body {
+        width: 100vw;
+        min-height: 100vh;
+      }
       body {
+        padding: 10px;
         margin: 0 auto;
         max-width: 720px;
-        width: 100%;
-        min-height: 100vh;
         background-color: #FDD835;
-        font-size: 40px;
+        font-size: 30px;
         display: flex;
         flex-direction: column;
         justify-content: space-around;
@@ -50,14 +56,22 @@
       button {
         display: block;
         width: 100%;
-        height: 3em;
+        height: 4em;
         background-color: transparent;
         border: 3px solid rgba(0, 0, 0, 0.54);
-        font-size: 40px;
+        font-size: 30px;
       }
       input {
         display: block;
         margin: 0 auto;
+      }
+      footer {
+        font-size: 0.3em;
+        color: rgba(0, 0, 0, 0.24);
+      }
+      footer a {
+        color: inherit;
+        text-decoration: underline;
       }
     </style>
 
@@ -72,11 +86,13 @@
   </head>
   <body>
     <p>
-      Please select the <code>messages.html</code> in the <code>html</code>
-      directory of your Facebook export and press “Download Archive”. The
-      webpage might freeze for a while.
+      Please select the <code>messages.htm</code> in the <code>html</code>
+      directory of your Facebook export and press “Download Archive”.
     </p>
     <input type="file">
     <button>Download Archive</button>
+    <footer>
+      fbchatexport {{_!_version_!_}} by Surma. <a href="https://twitter.com/surmair">Twitter</a>, <a href="https://github.com/surma/fbchatexport">Source</a>
+    </footer>
   </body>
 </html>

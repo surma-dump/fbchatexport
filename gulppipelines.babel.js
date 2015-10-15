@@ -1,3 +1,4 @@
+import pkg from './package.json';
 import gulpLoadPlugins from 'gulp-load-plugins';
 const $ = gulpLoadPlugins();
 
@@ -11,7 +12,11 @@ export default {
         modules: 'amd'
       })
     ),
-    $.uglify(),
+    $.uglify({
+      mangle: {
+        except: ['$', 'require', 'exports']
+      }
+    }),
     $.sourcemaps.write('.')
   ],
   '{sass,scss}': () => [
@@ -30,6 +35,7 @@ export default {
     $.sourcemaps.write('.')
   ],
   'html': () => [
+    $.replace('{{_!_version_!_}}', pkg.version),
     $.minifyInline(),
     $.minifyHtml()
   ],
