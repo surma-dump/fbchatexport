@@ -2,20 +2,7 @@ import {HTMLParser} from 'modules/htmlparser';
 import {default as JSZip} from 'bower_components/jszip/dist/jszip.min';
 
 self.addEventListener('message', ev => {
-  self.postMessage({
-    type: 'progress',
-    progress: 0,
-    message: 'Reading file'
-  });
-  loadFile(ev.data)
-  .then(content => {
-    self.postMessage({
-      type: 'progress',
-      progress: 0,
-      message: 'Parsing file'
-    });
-    return HTMLParser(content);
-  })
+  return HTMLParser(ev.data)
   .then(dom => {
     self.postMessage({
       type: 'progress',
@@ -29,41 +16,36 @@ self.addEventListener('message', ev => {
     contents.children = [];
     const threads = findAllByClass.call(contentsCopy, 'thread');
 
-    return threads.map(thread => {
+    return threads.map((thread, index, array) => {
+      self.postMessage({
+        type: 'progress',
+        progress: index / array.length,
+        message: `Processing conversation ${index + 1} of ${array.length}`
+      });
       contents.children = [thread];
-      return Object.assign({}, dom);
+      return domToString(dom);
     });
   }).then(threads => {
     const zipFile = new JSZip();
     let i = 0;
-    threads.map((conv, index, array) => {
-      self.postMessage({
-        type: 'progress',
-        progress: index / array.length,
-        message: `Serializing conversation ${index + 1} of ${array.length}`
-      });
-      return domToString(conv);
-    }).forEach((conv, index, array) => {
-      zipFile.file(`conversation_${i++}.html`, conv);
+    threads.forEach(thread => {
+      zipFile.file(`conversation_${i++}.html`, thread);
     });
     return zipFile;
   }).then(zipFile => {
     self.postMessage({
+      type: 'progress',
+      progress: 1,
+      message: 'Generating ZIP file'
+    });
+    const zipBlob = zipFile.generate({type: 'blob'});
+    const blobURL = URL.createObjectURL(zipBlob);
+    self.postMessage({
       type: 'result',
-      message: zipFile.generate({type: 'blob'})
+      message: blobURL
     });
   });
 });
-
-function loadFile(file) {
-  return new Promise((resolve, reject) => {
-    const fr = new FileReader();
-    fr.addEventListener('load', ev => {
-      return resolve(ev.target.result);
-    });
-    fr.readAsText(file, 'utf-8');
-  });
-}
 
 function hasClass(classname) {
   return this.hasOwnProperty('attributes') &&

@@ -9,27 +9,20 @@ var file = null;
 ww.addEventListener('message', ev => {
   switch (ev.data.type) {
     case 'progress':
-      button.textContent = ev.data.message;
-      const percent = ev.data.progress * 100;
-      button.style.background =
-        `linear-gradient(
-          90deg,
-          rgba(0, 0, 0, 0.54) ${percent}%,
-          rgba(0, 0, 0, 0) ${percent}%)`;
+      setProgress(ev.data.message, ev.data.progress * 100);
     break;
     case 'result':
-      const zipBlob = ev.data.message;
-      const blobURL = window.URL.createObjectURL(zipBlob);
       const a = document.createElement('a');
       a.style.display = 'none';
-      a.href = blobURL;
+      a.href = ev.data.message;
       a.download = 'messages.zip';
       document.body.appendChild(a);
       a.click();
       window.setTimeout(() => {
-        window.URL.revokeObjectURL(blobURL);
+        window.URL.revokeObjectURL(a.href);
         document.body.removeChild(a);
         button.disabled = false;
+        setProgress('Download Archive', 0);
       }, 2000);
     break;
   };
@@ -47,5 +40,27 @@ button.addEventListener('click', () => {
     return;
   }
   button.disabled = true;
-  ww.postMessage(file);
+  setProgress('Reading file', 0);
+  loadFile(file).then(content => {
+    ww.postMessage(content);
+  });
 });
+
+function loadFile(file) {
+  return new Promise((resolve, reject) => {
+    let fr = new FileReader();
+    fr.onload = ev => {
+      return resolve(ev.target.result);
+    };
+    fr.readAsText(file, 'utf-8');
+  });
+}
+
+function setProgress(text, percent) {
+  button.textContent = text;
+  button.style.background =
+    `linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.54) ${percent}%,
+      rgba(0, 0, 0, 0) ${percent}%)`;
+}
