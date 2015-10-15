@@ -1,10 +1,32 @@
-import {default as JSZip} from 'bower_components/jszip/dist/jszip.min';
 import {default as cssLoader} from 'modules/defer-css';
 cssLoader();
 
+const ww = new Worker('nobabel/webworker.js');
 const fileInput = document.querySelector('input');
 const button = document.querySelector('button');
 var file = null;
+
+ww.addEventListener('message', ev => {
+  switch (ev.data.type) {
+    case 'progress':
+      setProgress(ev.data.message, ev.data.progress * 100);
+    break;
+    case 'result':
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = ev.data.message;
+      a.download = 'messages.zip';
+      document.body.appendChild(a);
+      a.click();
+      window.setTimeout(() => {
+        window.URL.revokeObjectURL(a.href);
+        document.body.removeChild(a);
+        button.disabled = false;
+        setProgress('Download Archive', 0);
+      }, 2000);
+    break;
+  };
+});
 
 fileInput.addEventListener('change', ev => {
   if (ev.target.files.length <= 0) {
@@ -17,46 +39,28 @@ button.addEventListener('click', () => {
   if (!file) {
     return;
   }
-
-  const fr = new FileReader();
-  fr.addEventListener('load', ev => {
-    const doc = document.implementation.createHTMLDocument('');
-    doc.documentElement.innerHTML = ev.target.result;
-
-    const convs = doc.documentElement.querySelectorAll('.contents .thread');
-
-    // Empty container
-    const container = doc.documentElement.querySelector('.contents');
-    while (container.firstChild) {
-      container.removeChild(container.firstChild);
-    }
-
-    const zipFile = new JSZip();
-    [].forEach.call(convs, conv => {
-      const filename =
-        Array.from(conv.querySelectorAll('.user'))
-        .map(x => x.textContent)
-        .filter((value, index, array) => array.indexOf(value) === index)
-        .join('_') + '.html';
-      console.log('Processing', filename);
-
-      const newDoc = doc.cloneNode(true);
-      newDoc.documentElement.querySelector('.contents').appendChild(conv);
-      zipFile.file(filename, newDoc.documentElement.innerHTML);
-    });
-
-    const zipBlob = zipFile.generate({type: 'blob'});
-    const blobURL = window.URL.createObjectURL(zipBlob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = blobURL;
-    a.download = 'messages.zip';
-    document.body.appendChild(a);
-    a.click();
-    window.setTimeout(() => {
-      window.URL.revokeObjectURL(blobURL);
-      document.body.removeChild(a);
-    }, 2000);
+  button.disabled = true;
+  setProgress('Reading file', 0);
+  loadFile(file).then(content => {
+    ww.postMessage(content);
   });
-  fr.readAsText(file, 'utf-8');
 });
+
+function loadFile(file) {
+  return new Promise((resolve, reject) => {
+    let fr = new FileReader();
+    fr.onload = ev => {
+      return resolve(ev.target.result);
+    };
+    fr.readAsText(file, 'utf-8');
+  });
+}
+
+function setProgress(text, percent) {
+  button.textContent = text;
+  button.style.background =
+    `linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.54) ${percent}%,
+      rgba(0, 0, 0, 0) ${percent}%)`;
+}
