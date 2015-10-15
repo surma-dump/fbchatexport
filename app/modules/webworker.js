@@ -23,13 +23,16 @@ self.addEventListener('message', ev => {
         message: `Processing conversation ${index + 1} of ${array.length}`
       });
       contents.children = [thread];
-      return domToString(dom);
+      return {
+        name: thread.children[0].data.replace(/[^a-z0-9]/ig, '_') + '.htm',
+        content: domToString(dom)
+      };
     });
   }).then(threads => {
     const zipFile = new JSZip();
     let i = 0;
     threads.forEach(thread => {
-      zipFile.file(`conversation_${i++}.html`, thread);
+      zipFile.file(thread.name, thread.content);
     });
     return zipFile;
   }).then(zipFile => {
