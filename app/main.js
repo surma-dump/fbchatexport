@@ -10,6 +10,12 @@ ww.addEventListener('message', ev => {
   switch (ev.data.type) {
     case 'progress':
       button.textContent = ev.data.message;
+      const percent = ev.data.progress * 100;
+      button.style.background =
+        `linear-gradient(
+          90deg,
+          rgba(0, 0, 0, 0.54) ${percent}%,
+          rgba(0, 0, 0, 0) ${percent}%)`;
     break;
     case 'result':
       const zipBlob = ev.data.message;
@@ -23,6 +29,7 @@ ww.addEventListener('message', ev => {
       window.setTimeout(() => {
         window.URL.revokeObjectURL(blobURL);
         document.body.removeChild(a);
+        button.disabled = false;
       }, 2000);
     break;
   };
@@ -39,6 +46,6 @@ button.addEventListener('click', () => {
   if (!file) {
     return;
   }
-
+  button.disabled = true;
   ww.postMessage(file);
 });

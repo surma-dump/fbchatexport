@@ -1,7 +1,6 @@
 import {HTMLParser} from 'modules/htmlparser';
 import {default as JSZip} from 'bower_components/jszip/dist/jszip.min';
 
-
 self.addEventListener('message', ev => {
   self.postMessage({
     type: 'progress',
