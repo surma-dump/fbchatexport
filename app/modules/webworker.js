@@ -4,14 +4,14 @@ import {default as JSZip} from 'bower_components/jszip/dist/jszip.min';
 self.addEventListener('message', ev => {
   self.postMessage({
     type: 'progress',
-    progress: 0,
+    progress: -1,
     message: `Parsing file`
   });
   return HTMLParser(ev.data)
   .then(dom => {
     self.postMessage({
       type: 'progress',
-      progress: 0,
+      progress: -1,
       message: 'Splitting conversations'
     });
 
@@ -47,7 +47,7 @@ self.addEventListener('message', ev => {
   }).then(zipFile => {
     self.postMessage({
       type: 'progress',
-      progress: 1,
+      progress: -1,
       message: 'Generating ZIP file'
     });
     const zipBlob = zipFile.generate({type: 'blob'});
