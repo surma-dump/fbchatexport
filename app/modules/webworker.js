@@ -28,8 +28,12 @@ self.addEventListener('message', ev => {
         message: `Processing conversation ${index + 1} of ${array.length}`
       });
       contents.children = [thread];
+      let name = thread.children[0].data.replace(/[^a-z0-9]/ig, '_');
+      if(name.length > 200) {
+        name = name.substr(0, 20);
+      }
       return {
-        name: thread.children[0].data.replace(/[^a-z0-9]/ig, '_') + '.htm',
+        name:  `${name}-${index}.htm`,
         content: domToString(dom)
       };
     });
