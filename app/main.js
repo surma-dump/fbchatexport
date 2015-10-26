@@ -57,10 +57,16 @@ function loadFile(file) {
 }
 
 function setProgress(text, percent) {
+  if (percent < 0) {
+    button.classList.add('progress--undef');
+    button.style.background = '';
+  } else {
+    button.classList.remove('progress--undef');
+    button.style.background =
+      `linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.24) ${percent}%,
+        rgba(0, 0, 0, 0) ${percent}%) no-repeat`;
+  }
   button.textContent = text;
-  button.style.background =
-    `linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.24) ${percent}%,
-      rgba(0, 0, 0, 0) ${percent}%) no-repeat`;
 }
